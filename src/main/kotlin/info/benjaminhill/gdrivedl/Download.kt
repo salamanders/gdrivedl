@@ -5,8 +5,9 @@ import java.net.SocketTimeoutException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
-internal val nonAsciiRe = Regex("[^A-Za-z0-9._\\-]+")
+internal val nonAsciiRe = Regex("[^a-z0-9._\\-]+", RegexOption.IGNORE_CASE)
 fun main() {
     processDir("root", Paths.get("./downloads"))
 }
@@ -50,13 +51,15 @@ private fun processFile(file: File, localDir: Path) = when {
         } else {
             print("Downloading ${file.mimeType} '$name' (~$mb mb)...")
             try {
-                val tmp = Files.createTempFile("gdownload-temp", "data").toFile()
+                val tmp = Paths.get("downloadfile.tmp").toFile()
+
                 tmp.outputStream().use { outputStream ->
                     service.files().get(file.id)
                         .executeMediaAndDownloadTo(outputStream)
                 }
+
                 localDir.toFile().mkdirs()
-                tmp.renameTo(targetFile) || error("Failed to move temp file to destination.")
+                Files.move(tmp.toPath(), targetFile.toPath(), StandardCopyOption.ATOMIC_MOVE)
                 println(" done.")
             } catch (e: SocketTimeoutException) {
                 println("SocketTimeoutException when downloading $name, skipping this time.")
