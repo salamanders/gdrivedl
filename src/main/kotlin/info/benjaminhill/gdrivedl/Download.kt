@@ -16,7 +16,7 @@ private fun processDir(remoteDirId: String, localDir: Path) {
         val result = service.files().list()
             .setQ("'$remoteDirId' in parents and trashed=false")
             .setPageSize(1000)
-            .setFields("nextPageToken, files(id, name, mimeType)")
+            .setFields("nextPageToken, files(id, name, mimeType, quotaBytesUsed)")
             .setPageToken(pageToken)
             .execute()
 
@@ -37,7 +37,7 @@ private fun processFile(file: File, localDir: Path) {
         file.mimeType.startsWith("application/vnd.google-apps") -> {
             println("Skipping native file '${file.name}'")
         }
-        else -> {
+        file.quotaBytesUsed?.let { it > 0 } ?: false -> {
             println("Downloading ${file.mimeType} '${file.name}' (${file.quotaBytesUsed})")
             localDir.toFile().mkdirs()
             localDir.resolve(file.name.replace("\\s+", "_")).toFile().outputStream().use { outputStream ->
@@ -45,6 +45,7 @@ private fun processFile(file: File, localDir: Path) {
                     .executeMediaAndDownloadTo(outputStream)
             }
         }
+        else -> println("Skipping file that doesn't use quota: ${file.name}")
     }
 }
 
