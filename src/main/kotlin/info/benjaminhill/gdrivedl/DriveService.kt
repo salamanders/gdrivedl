@@ -18,7 +18,7 @@ private val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()
 private const val TOKENS_DIRECTORY_PATH = "tokens"
 
 /**
- * Global instance of the scopes required by this quickstart.
+ * Global instance of the scopes required by this app.
  * If modifying these scopes, delete your previously saved tokens/ folder.
  */
 private val SCOPES = listOf(DriveScopes.DRIVE_READONLY)
@@ -41,7 +41,9 @@ private fun getCredentials(): Credential {
     }
 }
 
-fun getDriveService() = Drive
-    .Builder(httpTransport, JSON_FACTORY, getCredentials())
-    .setApplicationName(APPLICATION_NAME)
-    .build()!!
+internal val service: Drive by lazy {
+    Drive
+        .Builder(httpTransport, JSON_FACTORY, getCredentials())
+        .setApplicationName(APPLICATION_NAME)
+        .build()!!
+}
