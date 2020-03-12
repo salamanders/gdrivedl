@@ -1,5 +1,8 @@
 package info.benjaminhill.gdrivedl
 
+import com.google.api.client.http.HttpResponseException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import java.io.Serializable
 import java.net.SocketTimeoutException
 import java.nio.file.Files
@@ -8,6 +11,7 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.util.*
 import kotlin.time.ExperimentalTime
+import kotlin.time.seconds
 
 internal val nonAsciiRe = Regex("[^a-z0-9._\\-]+", RegexOption.IGNORE_CASE)
 
@@ -58,8 +62,19 @@ private fun processFile(file: SFile, parentDir: Path): Unit = when {
     }
     // recurse (don't create local dirs yet)
     file.mimeType == "application/vnd.google-apps.folder" -> {
-        dirToFiles(file.id).forEach { childFile ->
-            processFile(childFile, parentDir.resolve(file.name.replace(nonAsciiRe, "_")))
+        try {
+            dirToFiles(file.id).forEach { childFile ->
+                processFile(childFile, parentDir.resolve(file.name.replace(nonAsciiRe, "_")))
+            }
+        } catch (e: Exception) {
+            when (e) {
+                is SocketTimeoutException -> runBlocking {
+                    println("SocketTimeoutException whenlisting ${file.id}, skipping this time.")
+                    delay(5.seconds.inMilliseconds.toLong())
+                }
+                is HttpResponseException -> println("HttpResponseException when downloading ${file.id}, skipping this time.")
+                else -> throw e
+            }
         }
     }
     else -> {

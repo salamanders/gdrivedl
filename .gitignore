@@ -214,6 +214,6 @@ $RECYCLE.BIN/
 /src/main/resources/credentials.json
 /gdrivedl.iml
 /target/
-/downloads/
+/downloads/**
 /downloadfile.tmp
 /simplecache.ser.gz
