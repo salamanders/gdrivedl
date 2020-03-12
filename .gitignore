@@ -216,3 +216,4 @@ $RECYCLE.BIN/
 /target/
 /downloads/
 /downloadfile.tmp
+/simplecache.ser.gz

@@ -8,7 +8,10 @@ Kotlin script that recursively downloads all non-Google-native files to a local 
 Requires you to create a Google Cloud project with the Drive API enabled, 
 and download the `resources/credentials.json` file.
 
-
-## TODO
+## Features and TODOs
  
- -[ ] Respect already completed files
+ -[x] Skip already completed files
+ -[x] Cache the folder listing API calls
+ -[x] Safe characters in local file names
+ -[x] Download to a temp file and atomically move
+ -[x] Skip 0-quota files
