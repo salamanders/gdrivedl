@@ -22,8 +22,12 @@ internal val cacheFolderToFiles = SimpleCache<String, LinkedList<SFile>>()
 
 @ExperimentalTime
 fun main() {
-    dirToFiles("root").forEach { childFile ->
-        processFile(childFile, Paths.get("./downloads"))
+    //dirToFiles("root").forEach { childFile ->
+    //    processFile(childFile, Paths.get("./downloads"))
+    //}
+
+    dirToFiles("0ByXCDxKWoabVbnprMVlwLXJFaXc").forEach { childFile ->
+        processFile(childFile, Paths.get("./downloads/my_computers"))
     }
 }
 

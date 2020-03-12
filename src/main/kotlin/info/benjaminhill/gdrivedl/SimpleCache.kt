@@ -60,8 +60,9 @@ class SimpleCache<K : Serializable, V : Serializable> {
     fun getOrPut(key: K, exec: () -> V): V {
         if (!cache.containsKey(key)) {
             set(key, exec())
+            println("  cache miss on '$key'")
         } else {
-            println("  cache hit")
+            println("  cache hit on '$key'")
         }
         return cache[key]!!
     }
