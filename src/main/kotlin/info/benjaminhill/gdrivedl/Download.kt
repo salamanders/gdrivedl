@@ -54,12 +54,6 @@ private fun dirToFiles(remoteDirId: String) = cacheFolderToFiles.getOrPut(remote
 
 @ExperimentalTime
 private fun processFile(file: SFile, parentDir: Path): Unit = when {
-    file.mimeType.startsWith("application/vnd.google-apps") -> {
-        println("Skipping native file '${file.name}'")
-    }
-    file.quotaBytesUsed == 0L -> {
-        println("Skipping file that doesn't use quota: ${file.name}")
-    }
     // recurse (don't create local dirs yet)
     file.mimeType == "application/vnd.google-apps.folder" -> {
         try {
@@ -77,28 +71,38 @@ private fun processFile(file: SFile, parentDir: Path): Unit = when {
             }
         }
     }
+    file.mimeType.startsWith("application/vnd.google-apps") -> {
+        println("Skipping native file '${file.name}'")
+    }
+    file.quotaBytesUsed == 0L -> {
+        println("Skipping file that doesn't use quota: ${file.name}")
+    }
     else -> {
-        val mb = file.quotaBytesUsed / (1024 * 1024)
-        val name = file.name.replace(nonAsciiRe, "_")
-        val targetFile = parentDir.resolve(name).toFile()
-        if (targetFile.exists()) {
-            println("File already exists, skipping: $name")
-        } else {
-            print("Downloading ${file.mimeType} '$name' (~$mb mb)...")
-            try {
-                val tmp = Paths.get("downloadfile.tmp").toFile()
+        downloadFile(file, parentDir)
+    }
+}
 
-                tmp.outputStream().use { outputStream ->
-                    GDrive.service.files().get(file.id)
-                        .executeMediaAndDownloadTo(outputStream)
-                }
+private fun downloadFile(file: SFile, parentDir: Path) {
+    val mb = file.quotaBytesUsed / (1024 * 1024)
+    val name = file.name.replace(nonAsciiRe, "_")
+    val targetFile = parentDir.resolve(name).toFile()
+    if (targetFile.exists()) {
+        println("File already exists, skipping: $name")
+    } else {
+        print("Downloading ${file.mimeType} '$name' (~$mb mb)...")
+        try {
+            val tmp = Paths.get("downloadfile.tmp").toFile()
 
-                parentDir.toFile().mkdirs()
-                Files.move(tmp.toPath(), targetFile.toPath(), StandardCopyOption.ATOMIC_MOVE)
-                println(" done.")
-            } catch (e: SocketTimeoutException) {
-                println("SocketTimeoutException when downloading $name, skipping this time.")
+            tmp.outputStream().use { outputStream ->
+                GDrive.service.files().get(file.id)
+                    .executeMediaAndDownloadTo(outputStream)
             }
+
+            parentDir.toFile().mkdirs()
+            Files.move(tmp.toPath(), targetFile.toPath(), StandardCopyOption.ATOMIC_MOVE)
+            println(" done.")
+        } catch (e: SocketTimeoutException) {
+            println("SocketTimeoutException when downloading $name, skipping this time.")
         }
     }
 }
