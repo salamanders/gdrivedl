@@ -67,7 +67,7 @@ private fun processFile(file: SFile, parentDir: Path): Unit = when {
         } catch (e: Exception) {
             when (e) {
                 is SocketTimeoutException -> runBlocking {
-                    println("SocketTimeoutException whenlisting ${file.id}, skipping this time.")
+                    println("SocketTimeoutException when listing ${file.id}, skipping this time.")
                     delay(5.seconds.inMilliseconds.toLong())
                 }
                 is HttpResponseException -> println("HttpResponseException when downloading ${file.id}, skipping this time.")
@@ -82,8 +82,7 @@ private fun processFile(file: SFile, parentDir: Path): Unit = when {
     file.quotaBytesUsed == 0L -> {
         println("Skipping file that doesn't use quota: ${file.name}")
     }
-
-     */
+    */
     else -> {
         downloadFile(file, parentDir)
     }
