@@ -22,9 +22,9 @@ internal val cacheFolderToFiles = SimpleCache<String, LinkedList<SFile>>()
 
 @ExperimentalTime
 fun main() {
-    //dirToFiles("root").forEach { childFile ->
-    //    processFile(childFile, Paths.get("./downloads"))
-    //}
+    dirToFiles("root").forEach { childFile ->
+        processFile(childFile, Paths.get("./downloads"))
+    }
 
     dirToFiles("0ByXCDxKWoabVbnprMVlwLXJFaXc").forEach { childFile ->
         processFile(childFile, Paths.get("./downloads/my_computers"))
@@ -78,9 +78,12 @@ private fun processFile(file: SFile, parentDir: Path): Unit = when {
     file.mimeType.startsWith("application/vnd.google-apps") -> {
         println("Skipping native file '${file.name}'")
     }
+    /*
     file.quotaBytesUsed == 0L -> {
         println("Skipping file that doesn't use quota: ${file.name}")
     }
+
+     */
     else -> {
         downloadFile(file, parentDir)
     }
@@ -96,6 +99,11 @@ private fun downloadFile(file: SFile, parentDir: Path) {
         print("Downloading ${file.mimeType} '$name' (~$mb mb)...")
         try {
             val tmp = Paths.get("downloadfile.tmp").toFile()
+
+            if (tmp.exists()) {
+                tmp.delete()
+                println("Cleared out old tmp file.")
+            }
 
             tmp.outputStream().use { outputStream ->
                 GDrive.service.files().get(file.id)
